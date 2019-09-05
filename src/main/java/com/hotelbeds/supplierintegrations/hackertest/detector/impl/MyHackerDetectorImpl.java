@@ -1,10 +1,10 @@
 package com.hotelbeds.supplierintegrations.hackertest.detector.impl;
 
 import com.hotelbeds.supplierintegrations.hackertest.detector.HackerDetector;
+import com.hotelbeds.supplierintegrations.hackertest.lineparser.LogLineParser;
 import com.hotelbeds.supplierintegrations.hackertest.model.AttemptsPerIP;
 import com.hotelbeds.supplierintegrations.hackertest.model.LogLine;
 import com.hotelbeds.supplierintegrations.hackertest.model.LogLineAction;
-import com.hotelbeds.supplierintegrations.hackertest.model.LogLineParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,10 +41,12 @@ public class MyHackerDetectorImpl implements HackerDetector {
         LogLine newLoginAttempt = logLineParser.parseLoginAttempt(line);
         String suspiciousIp = null;
 
-        if (ongoingIpChecks.containsKey(newLoginAttempt.getIp())) {
-            suspiciousIp = processAttemptForExistingIp(newLoginAttempt);
-        } else {
-            processAttemptForNewIp(newLoginAttempt);
+        if (newLoginAttempt.getLogLineAction().equals(LogLineAction.SIGNIN_FAILURE)) {
+            if (ongoingIpChecks.containsKey(newLoginAttempt.getIp())) {
+                suspiciousIp = processFailedAttemptForExistingIp(newLoginAttempt);
+            } else {
+                processFailedAttemptForNewIp(newLoginAttempt);
+            }
         }
 
         purgeOldIpChecks(newLoginAttempt.getTimestamp());
@@ -52,7 +54,7 @@ public class MyHackerDetectorImpl implements HackerDetector {
         return suspiciousIp;
     }
 
-    private String processAttemptForExistingIp(LogLine newLoginAttempt) {
+    private String processFailedAttemptForExistingIp(LogLine newLoginAttempt) {
         AttemptsPerIP attemptsPerIP = ongoingIpChecks.get(newLoginAttempt.getIp());
         LogLine firstLoginAttempt = attemptsPerIP.getAttempts().get(0);
         if (attemptsPerIP.getAttempts().size() == 4
@@ -68,26 +70,27 @@ public class MyHackerDetectorImpl implements HackerDetector {
         }
     }
 
+    private void processFailedAttemptForNewIp(LogLine logLine) {
+        if (logLine.getLogLineAction().equals(LogLineAction.SIGNIN_FAILURE)) {
+            AttemptsPerIP attemptsPerIP = new AttemptsPerIP(logLine.getIp());
+            attemptsPerIP.getAttempts().add(logLine);
+            ongoingIpChecks.put(attemptsPerIP.getIp(), attemptsPerIP);
+        }
+    }
+
     private void purgeOldIpChecks(LocalDateTime timestamp) {
         ongoingIpChecks.forEach((ip, attempts) -> {
             log.debug("Checks for {} before purging: {}", ip, attempts.getAttempts());
             List<LogLine> purged = attempts.getAttempts().stream()
                     .filter(attempt -> ChronoUnit.MINUTES.between(attempt.getTimestamp(), timestamp) <= 5)
                     .collect(Collectors.toList());
-            attempts.setAttempts(purged);
+            attempts.getAttempts().clear();
+            attempts.getAttempts().addAll(purged);
             log.debug("Checks for {} after purging: {}", ip, attempts.getAttempts());
         });
         ongoingIpChecks.values().removeIf(elem -> elem.getAttempts().isEmpty());
     }
 
-    private void processAttemptForNewIp(LogLine logLine) {
-        if (logLine.getLogLineAction().equals(LogLineAction.SIGNIN_FAILURE)) {
-            AttemptsPerIP attemptsPerIP = new AttemptsPerIP();
-            attemptsPerIP.setIp(logLine.getIp());
-            attemptsPerIP.getAttempts().add(logLine);
-            ongoingIpChecks.put(attemptsPerIP.getIp(), attemptsPerIP);
-        }
-    }
 
 
 

@@ -1,5 +1,7 @@
-package com.hotelbeds.supplierintegrations.hackertest.model;
+package com.hotelbeds.supplierintegrations.hackertest.lineparser;
 
+import com.hotelbeds.supplierintegrations.hackertest.model.LogLine;
+import com.hotelbeds.supplierintegrations.hackertest.model.LogLineAction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -13,12 +15,12 @@ import java.util.TimeZone;
 public class LogLineParser {
 
     /**
-     * Parse a line with format "ip,timestamp,ACTION,username"
+     * Parse a line with format "ip,date,action,username"
      *
      * @param line to be parsed
      * @return {@link LogLine}
      * @throws IllegalArgumentException - either if line is empty,
-     *                                  or if it does not have exactly 4 comma-delimited elements, or if any element does not parse correctly.
+     *   or if it does not have exactly 4 comma-delimited elements, or if any element does not parse correctly.
      */
     public LogLine parseLoginAttempt(String line) {
         log.debug("Parsing line: {}", line);
@@ -35,15 +37,11 @@ public class LogLineParser {
 
 
     private LogLine doParseLine(String[] chunks) {
-        LogLine parsed = new LogLine();
-
-        parsed.setIp(chunks[0]);
         Long secondsDate = Long.parseLong(chunks[1]);
-        LocalDateTime timestamp =
+        LocalDateTime dateTime =
                 LocalDateTime.ofInstant(Instant.ofEpochSecond(secondsDate), TimeZone.getDefault().toZoneId());
-        parsed.setTimestamp(timestamp);
-        parsed.setLogLineAction(LogLineAction.valueOf(chunks[2]));
-        parsed.setUsername(chunks[3]);
+
+        LogLine parsed = new LogLine(chunks[0], dateTime, LogLineAction.valueOf(chunks[2]), chunks[3]);
 
         log.debug("Log line parsed: {}", parsed);
         return parsed;

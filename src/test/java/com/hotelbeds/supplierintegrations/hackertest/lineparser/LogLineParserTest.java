@@ -1,5 +1,7 @@
-package com.hotelbeds.supplierintegrations.hackertest.model;
+package com.hotelbeds.supplierintegrations.hackertest.lineparser;
 
+import com.hotelbeds.supplierintegrations.hackertest.model.LogLine;
+import com.hotelbeds.supplierintegrations.hackertest.model.LogLineAction;
 import org.junit.Test;
 
 import java.time.Instant;

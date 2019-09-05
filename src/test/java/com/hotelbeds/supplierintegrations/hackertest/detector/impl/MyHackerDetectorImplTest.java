@@ -1,6 +1,6 @@
 package com.hotelbeds.supplierintegrations.hackertest.detector.impl;
 
-import com.hotelbeds.supplierintegrations.hackertest.model.LogLineParser;
+import com.hotelbeds.supplierintegrations.hackertest.lineparser.LogLineParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,11 +36,13 @@ public class MyHackerDetectorImplTest {
     public void should_return_ip_fifth_invocation_less_than_5min_from_2nd_call() {
         String firstLogLine = "80.238.9.179,1236129471,SIGNIN_FAILURE,Ages.Ago";
         String secondLogLine = "80.238.9.179,1336136851,SIGNIN_FAILURE,Will.Smith";
+        String successLogLine = "80.238.9.179,1336136851,SIGNIN_SUCCESS,Will.Smith";
         String logLineMoreThan5min = "80.238.9.179,1336136951,SIGNIN_FAILURE,Will.Smith";
         assertNull(hackerDetector.parseLine(firstLogLine));
         assertNull(hackerDetector.parseLine(secondLogLine));
         assertNull(hackerDetector.parseLine(secondLogLine));
         assertNull(hackerDetector.parseLine(secondLogLine));
+        assertNull(hackerDetector.parseLine(successLogLine));
         assertNull(hackerDetector.parseLine(secondLogLine));
         assertEquals("80.238.9.179", hackerDetector.parseLine(logLineMoreThan5min));
     }

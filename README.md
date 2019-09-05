@@ -1,13 +1,10 @@
 # Getting Started
 
-### Reference Documentation
-For further reference, please consider the following sections:
+### Project structure
+The project contains two main packages:
 
-* [Official Gradle documentation](https://docs.gradle.org)
-* [Spring Boot Gradle Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.1.7.RELEASE/gradle-plugin/reference/html/)
-
-### Additional Links
-These additional references should also help you:
-
-* [Gradle Build Scans – insights for your project's build](https://scans.gradle.com#gradle)
-
+* hackertest: implementation of the first part of the assessment, related to the hacker detection system.
+  * detector (and .impl): implementation of the suggested interface HackerDetector.
+  * lineparser: log line parser.
+  * model: containing VOs
+* timetest: implementation of the second part of the assessment, related to time calculation.

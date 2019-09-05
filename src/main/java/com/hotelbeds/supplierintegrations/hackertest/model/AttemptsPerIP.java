@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 public class AttemptsPerIP {
-    private String ip;
-    private List<LogLine> attempts = new ArrayList<>();
+    private final String ip;
+    private final List<LogLine> attempts = new ArrayList<>();
 }
