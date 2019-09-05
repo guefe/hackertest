@@ -5,8 +5,9 @@ import com.hotelbeds.supplierintegrations.hackertest.model.AttemptsPerIP;
 import com.hotelbeds.supplierintegrations.hackertest.model.LogLine;
 import com.hotelbeds.supplierintegrations.hackertest.model.LogLineAction;
 import com.hotelbeds.supplierintegrations.hackertest.model.LogLineParser;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -15,12 +16,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
+@Service
 @Slf4j
 public class MyHackerDetectorImpl implements HackerDetector {
 
-    private final LogLineParser logLineParser;
+    private LogLineParser logLineParser;
     private Map<String, AttemptsPerIP> ongoingIpChecks = new HashMap<>();
+
+    public MyHackerDetectorImpl(@Autowired LogLineParser parser) {
+        this.logLineParser = parser;
+    }
 
     /**
      * Analyses a log line in String form, deciding whether the IP is suspicious or not.
